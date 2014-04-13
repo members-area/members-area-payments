@@ -12,7 +12,7 @@ module.exports =
   modifyNavigationItems: ({addItem}) ->
     addItem 'admin',
       title: 'Payments'
-      id: 'members-area-payments-payments-index'
+      id: 'members-area-payments'
       href: '/admin/payments'
       permissions: ['admin']
       priority: 20
