@@ -10,6 +10,7 @@ module.exports =
     @hook 'models:initialize', ({models}) =>
       models.Payment.hasOne 'transaction', models.Transaction, reverse: 'payments', autoFetch: false
     @hook 'render-role-edit', @renderRoleSubscription.bind(this)
+    @hook 'render-person-view', @renderPersonPayments.bind(this)
 
     RoleController.before @handleRoleSubscription, only: ['edit']
 
@@ -39,6 +40,55 @@ module.exports =
     $topNode.after $newNode
     options.html = $.html()
     return
+
+  renderPersonPayments: (options, done) ->
+    {controller, html} = options
+    return done() unless controller.loggedInUser.can 'admin'
+    controller.req.models.Payment.find()
+    .order("when", "DESC")
+    .where(user_id: controller.user.id)
+    .limit(20)
+    .run (err, payments) =>
+      $ = cheerio.load(html)
+      $main = $(".main").eq(0)
+
+      rows = []
+      if payments?.length
+        for payment in payments
+          rows.push """
+            <tr>
+              <td>#{payment.when.toISOString().substr(0, 10)}</td>
+              <td>#{payment.type}</td>
+              <td>£#{(payment.amount/100).toFixed(2)}</td>
+              <td>#{payment.period_from.toISOString().substr(0, 10)}</td>
+              <td>#{payment.period_count}</td>
+            </tr>
+            """
+      else
+        rows.push """
+          <tr>
+            <td colspan="5">
+              No records to display
+            </td>
+          </tr>
+          """
+
+      $main.append """
+        <h3>Payments</h3>
+        <table class="table table-striped">
+          <tr>
+            <th>Payment Date</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>From</th>
+            <th>Duration (months)</th>
+          </tr>
+          #{rows.join("\n")}
+        </table>
+        """
+      options.html = $.html()
+      done()
+      return
 
   handleRoleSubscription: ->
     # IMPORTANT: this method runs in the context of a RoleController instance
