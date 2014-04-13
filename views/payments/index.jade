@@ -1,0 +1,27 @@
+extends /sidebar
+
+block title
+  | Payments
+
+block content
+  h2 Payments
+
+  table.table.table-striped
+    tr
+      th User
+      th Date
+      th Type
+      th Amount
+      th From
+      th Duration (months)
+    each payment in payments
+      tr
+        td= payment.user.name
+        td= payment.when.toISOString().substr(0,10)
+        td= payment.type
+        td= payment.amount
+        td= payment.period_from
+        td= payment.period_count
+    else
+      tr
+        td(colspan=6) No payments yet.
