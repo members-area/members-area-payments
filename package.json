@@ -21,5 +21,7 @@
     "url": "https://github.com/members-area/members-area-payments/issues"
   },
   "homepage": "https://github.com/members-area/members-area-payments",
-  "dependencies": {}
+  "dependencies": {
+    "async": "^0.7.0"
+  }
 }
