@@ -18,15 +18,16 @@ block content
       th Date
       th Type
       th Amount
-      th From
+      th Subscription From
       th Duration (months)
     each payment in payments
       tr
-        td= payment.user.name
+        td
+          a(href="/people/#{payment.user.id}")= payment.user.username
         td= payment.when.toISOString().substr(0,10)
         td= payment.type
         td= payment.amount
-        td= payment.period_from
+        td= payment.period_from.toISOString().substr(0,10)
         td= payment.period_count
     else
       tr
