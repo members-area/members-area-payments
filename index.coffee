@@ -5,6 +5,7 @@ module.exports =
   initialize: (done) ->
     @app.addRoute 'all', '/admin/payments', 'members-area-payments#payments#index'
     @app.addRoute 'all', '/admin/payments/:id', 'members-area-payments#payments#view'
+    @app.addRoute 'all', '/subscription', 'members-area-payments#subscription#view'
 
     @hook 'navigation_items', @modifyNavigationItems.bind(this)
     @hook 'models:initialize', ({models}) =>
@@ -18,6 +19,12 @@ module.exports =
     done()
 
   modifyNavigationItems: ({addItem}) ->
+    addItem 'user',
+      title: 'Subscription'
+      id: 'members-area-payments-subscription-view'
+      href: '/subscription'
+      permissions: []
+      priority: 42
     addItem 'admin',
       title: 'Payments'
       id: 'members-area-payments'
