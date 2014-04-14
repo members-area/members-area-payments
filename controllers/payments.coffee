@@ -1,9 +1,10 @@
-Controller = require 'members-area/app/controller'
+LoggedInController = require 'members-area/app/controllers/logged-in'
 async = require 'members-area/node_modules/async'
 
-class PaymentsController extends Controller
+class PaymentsController extends LoggedInController
   @before 'setActiveNagivationId'
   @before 'requireAdmin'
+  @before 'saveSettings', only: ['index']
 
   index: (done) ->
     @req.models.Payment.find()
@@ -26,5 +27,11 @@ class PaymentsController extends Controller
   setActiveNagivationId: ->
     @activeNavigationId = 'members-area-payments'
 
-module.exports = PaymentsController
+  saveSettings: (done) ->
+    if @req.method is 'POST'
+      @plugin.set @data, done
+    else
+      @data = @plugin.get()
+      done()
 
+module.exports = PaymentsController

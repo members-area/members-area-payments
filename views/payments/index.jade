@@ -1,5 +1,11 @@
 extends /sidebar
 
+mixin formatInput(name, label, placeholder)
+  .control-group
+    label.control-label(for=name)= label
+    .controls
+      input(id=name, name=name, value=data[name], placeholder=placeholder)
+
 block title
   | Payments
 
@@ -25,3 +31,13 @@ block content
     else
       tr
         td(colspan=6) No payments yet.
+
+  h3 Settings
+  form.form-horizontal(method="POST")
+    +formatInput("payee", "Payee", "So Make It Ltd.")
+    +formatInput("sortCode", "Sort Code", "00-00-00")
+    +formatInput("accountNumber", "Account Number", "0000 0000")
+
+    .control-group
+      .controls
+        button.btn-success(type="Submit") Save
