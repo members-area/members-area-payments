@@ -1,6 +1,6 @@
 {
   "name": "members-area-payments",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Payment support for the Members Area",
   "main": "index.coffee",
   "scripts": {
