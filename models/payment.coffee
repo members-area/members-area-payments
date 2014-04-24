@@ -60,5 +60,22 @@ module.exports = (db, models) ->
     timestamp: true
     hooks: db.applyCommonHooks {}
 
+  Payment.getUserPaidUntil = (user, suggestedDate = new Date()) ->
+    # Start with the date of the transaction / today.
+    nextPaymentDate = suggestedDate
+
+    # If they have a role that requires subscription then go to that's start date instead.
+    for roleUser in user.activeRoleUsers ? []
+      if roleUser.role?.meta?.subscriptionRequired
+        if +roleUser.approved < +nextPaymentDate
+          nextPaymentDate = roleUser.approved
+
+    # Finally if they've already got a paidUntil ahead of this then use that.
+    # NOTE: we don't just use paidUntil in case there was a break in membership/PAYG/etc.
+    if +user.meta.paidUntil > +nextPaymentDate
+      nextPaymentDate = user.meta.paidUntil
+
+    return nextPaymentDate
+
   Payment.modelName = 'Payment'
   return Payment
