@@ -81,8 +81,29 @@ module.exports =
           </tr>
           """
 
+      paidUntil = controller.user.paidUntil
+
+      midnightThisMorning = new Date()
+      midnightThisMorning.setHours(0)
+      midnightThisMorning.setMinutes(0)
+      midnightThisMorning.setSeconds(0)
+
+      midnightAMonthAgo = new Date +midnightThisMorning
+      midnightAMonthAgo.setMonth(midnightAMonthAgo.getMonth()-1)
+
+      overdueDays = (midnightThisMorning - paidUntil)/(24*60*60*1000)
+
+      statusText =
+        if +paidUntil > +midnightThisMorning
+          "<p class='text-success'>Payments up to date</p>"
+        else if +paidUntil > midnightAMonthAgo
+          "<p class='text-warning'>Payments #{overdueDays} days overdue</p>"
+        else
+          "<p class='text-error'>Payments #{Math.floor overdueDays/7} weeks overdue</p>"
+
       $main.append """
         <h3>Payments</h3>
+        #{statusText}
         <table class="table table-striped">
           <tr>
             <th>Payment Date</th>
