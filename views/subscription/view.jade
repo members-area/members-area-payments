@@ -6,9 +6,8 @@ block title
 block content
   h2 Subscription
 
-  if loggedInUser.meta.paidUntil
-    - var paidUntil = Date.parse(loggedInUser.meta.paidUntil)
-    - var duration = Math.floor((new Date() - paidUntil)/(24*60*60*1000));
+  if loggedInUser.paidUntil
+    - var duration = Math.floor((new Date() - loggedInUser.paidUntil)/(24*60*60*1000));
     - durationText = duration + (duration == 1 ? " day" : " days")
     if duration > 14
       p.text-error Your subscription is #{durationText} overdue. Please set up or check your standing order to the details at the bottom of the page.
@@ -17,7 +16,7 @@ block content
     else
       p.text-success Your subscription is up to date - thanks very much!
       p Your next payment is due: 
-        strong= paidUntil.toISOString().substr(0, 10)
+        strong= loggedInUser.paidUntil.toISOString().substr(0, 10)
   else
     p.text-error We have received no subscription payments from you yet (payments may take
       |  a couple of days to show up). Please set up a standing order to the details at the bottom of the page.
