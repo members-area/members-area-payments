@@ -1,5 +1,4 @@
 RoleController = require 'members-area/app/controllers/role'
-cheerio = require 'members-area/node_modules/cheerio'
 
 module.exports =
   initialize: (done) ->
@@ -33,8 +32,7 @@ module.exports =
       priority: 20
 
   renderRoleSubscription: (options) ->
-    {controller} = options
-    $ = cheerio.load(options.html)
+    {controller, $} = options
     $topNode = $('.control-group').eq(0)
     checked = if !!controller.role.meta.subscriptionRequired then " checked='checked'" else ""
     $newNode = $ """
@@ -46,18 +44,16 @@ module.exports =
       </div>
       """
     $topNode.after $newNode
-    options.html = $.html()
     return
 
   renderPersonPayments: (options, done) ->
-    {controller} = options
+    {controller, $} = options
     return done() unless controller.loggedInUser.can 'admin'
     controller.req.models.Payment.find()
     .order("when", "DESC")
     .where(user_id: controller.user.id)
     .limit(20)
     .run (err, payments) =>
-      $ = cheerio.load(options.html)
       $main = $(".main").eq(0)
 
       rows = []
@@ -115,7 +111,6 @@ module.exports =
           #{rows.join("\n")}
         </table>
         """
-      options.html = $.html()
       done()
       return
 
