@@ -33,8 +33,8 @@ module.exports =
       priority: 20
 
   renderRoleSubscription: (options) ->
-    {controller, html} = options
-    $ = cheerio.load(html)
+    {controller} = options
+    $ = cheerio.load(options.html)
     $topNode = $('.control-group').eq(0)
     checked = if !!controller.role.meta.subscriptionRequired then " checked='checked'" else ""
     $newNode = $ """
@@ -50,14 +50,14 @@ module.exports =
     return
 
   renderPersonPayments: (options, done) ->
-    {controller, html} = options
+    {controller} = options
     return done() unless controller.loggedInUser.can 'admin'
     controller.req.models.Payment.find()
     .order("when", "DESC")
     .where(user_id: controller.user.id)
     .limit(20)
     .run (err, payments) =>
-      $ = cheerio.load(html)
+      $ = cheerio.load(options.html)
       $main = $(".main").eq(0)
 
       rows = []
