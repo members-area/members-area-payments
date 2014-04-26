@@ -60,9 +60,9 @@ module.exports = (db, models) ->
     timestamp: true
     hooks: db.applyCommonHooks {}
 
-  Payment.setUserPaidUntil = (user, data) ->
+  Payment.setUserPaidUntil = (user, date) ->
     paidUntil = date?.getTime?()
-    throw new Error("Invalid paidUntil! '#{data}'(#{typeof data})") unless paidUntil
+    throw new Error("Invalid paidUntil! '#{date}'(#{typeof date})") unless paidUntil
     user.setMeta _payments_paidUntil: +paidUntil
 
   Payment.getUserPaidUntil = (user, suggestedDate = new Date()) ->
