@@ -93,5 +93,12 @@ module.exports = (db, models) ->
     get: -> Payment.getUserPaidUntil(this)
     set: (v) -> Payment.setUserPaidUntil(this, v)
 
+  models.User.instanceProperties.requiresSubscription =
+    get: ->
+      for roleUser in @activeRoleUsers ? []
+        if roleUser.role?.meta?.subscriptionRequired
+          return true
+      return false
+
   Payment.modelName = 'Payment'
   return Payment
