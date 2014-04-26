@@ -60,7 +60,13 @@ module.exports = (db, models) ->
     timestamp: true
     hooks: db.applyCommonHooks {}
 
+  Payment.setUserPaidUntil = (user, data) ->
+    paidUntil = date?.getTime?()
+    throw new Error("Invalid paidUntil! '#{data}'(#{typeof data})") unless paidUntil
+    user.setMeta _payments_paidUntil: +paidUntil
+
   Payment.getUserPaidUntil = (user, suggestedDate = new Date()) ->
+    throw new Error("That's not a valid date object") unless suggestedDate?.getTime?()
     # Start with the date of the transaction / today.
     nextPaymentDate = suggestedDate
 
@@ -72,10 +78,20 @@ module.exports = (db, models) ->
 
     # Finally if they've already got a paidUntil ahead of this then use that.
     # NOTE: we don't just use paidUntil in case there was a break in membership/PAYG/etc.
-    if +user.meta.paidUntil > +nextPaymentDate
-      nextPaymentDate = user.meta.paidUntil
+    pU = user.meta._payments_paidUntil
+    if pU?
+      pU = new Date pU
+      if +pU > +nextPaymentDate
+        nextPaymentDate = pU
 
     return nextPaymentDate
+
+  models.User.instanceMethods.getPaidUntil = (suggestedDate) ->
+    Payment.getUserPaidUntil(this, suggestedDate)
+
+  models.User.instanceProperties.paidUntil =
+    get: -> Payment.getUserPaidUntil(this)
+    set: (v) -> Payment.setUserPaidUntil(this, v)
 
   Payment.modelName = 'Payment'
   return Payment
