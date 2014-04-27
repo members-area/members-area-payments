@@ -8,7 +8,7 @@ class PaymentsController extends LoggedInController
 
   index: (done) ->
     @req.models.Payment.find()
-    .order("id", "ASC")
+    .order("-id")
     .all (err, @payments) =>
       done(err)
 

@@ -5,7 +5,7 @@ class SubscriptionController extends LoggedInController
   view: (done) ->
     @req.models.Payment.find()
     .where(user_id: @loggedInUser.id)
-    .order("id", "ASC")
+    .order("-id")
     .all (err, @payments) =>
       done(err)
 
