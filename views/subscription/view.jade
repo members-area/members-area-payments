@@ -32,16 +32,18 @@ block content
       th Amount
       th From
       th Duration (months)
+      th Worked?
     each payment in payments
-      tr
+      tr(class=(payment.include ? "" : "text-error"))
         td= payment.when.toISOString().substr(0,10)
         td= payment.type
         td £#{(payment.amount/100).toFixed(2)}
         td= payment.period_from
         td= payment.period_count
+        td= (payment.include ? "✔" : "✘")
     else
       tr
-        td(colspan=6) No payments yet.
+        td(colspan=7) No payments yet.
 
   block standingorder
     h3 Standing order instructions
