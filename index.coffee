@@ -65,7 +65,7 @@ module.exports =
         for payment in payments
           rows.push """
             <tr class="#{if payment.include then "" else "text-error"}">
-              <td>#{payment.when.toISOString().substr(0, 10)}</td>
+              <td><a href="/admin/payments/#{payment.id}">#{payment.when.toISOString().substr(0, 10)}</a></td>
               <td>#{payment.type}</td>
               <td>£#{(payment.amount/100).toFixed(2)}</td>
               <td>#{payment.period_from.toISOString().substr(0, 10)}</td>
