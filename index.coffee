@@ -88,7 +88,7 @@ module.exports =
       midnightAMonthAgo = new Date +midnightThisMorning
       midnightAMonthAgo.setMonth(midnightAMonthAgo.getMonth()-1)
 
-      overdueDays = (midnightThisMorning - paidUntil)/(24*60*60*1000)
+      overdueDays = Math.floor (midnightThisMorning - paidUntil)/(24*60*60*1000)
 
       statusText =
         if +paidUntil > +midnightThisMorning
