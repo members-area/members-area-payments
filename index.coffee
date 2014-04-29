@@ -1,4 +1,5 @@
 RoleController = require 'members-area/app/controllers/role'
+PersonController = require 'members-area/app/controllers/person'
 
 module.exports =
   initialize: (done) ->
@@ -14,6 +15,9 @@ module.exports =
     @hook 'render-person-view', @renderPersonPayments.bind(this)
 
     RoleController.before @handleRoleSubscription, only: ['edit']
+    PersonController.before @addPaidUntilClasses, only: ['index']
+
+    @addCSS "#{__dirname}/css/payments.styl"
 
     done()
 
@@ -122,3 +126,23 @@ module.exports =
       subscriptionRequired = !!@data.subscriptionRequired
       delete @data.subscriptionRequired
       @role.setMeta {subscriptionRequired}
+
+  addPaidUntilClasses: ->
+    # IMPORTANT: this method runs in the context of a RoleController instance
+    return unless @isAdmin
+
+    midnightThisMorning = new Date()
+    midnightThisMorning.setHours(0)
+    midnightThisMorning.setMinutes(0)
+    midnightThisMorning.setSeconds(0)
+
+    for user in @users
+      overdueDays = Math.floor (midnightThisMorning - user.paidUntil)/(24*60*60*1000)
+      if overdueDays <= 3
+        user.classNames += " payments-good"
+      else if overdueDays < 30
+        user.classNames += " payments-warning"
+      else if overdueDays < 90
+        user.classNames += " payments-severe-warning"
+      else
+        user.classNames += " payments-error"
