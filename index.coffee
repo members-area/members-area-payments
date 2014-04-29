@@ -50,7 +50,7 @@ module.exports =
     {controller, $} = options
     return done() unless controller.loggedInUser.can 'admin'
     controller.req.models.Payment.find()
-    .order("when", "DESC")
+    .order("-when")
     .where(user_id: controller.user.id)
     .limit(20)
     .run (err, payments) =>
