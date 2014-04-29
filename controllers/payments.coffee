@@ -39,7 +39,7 @@ class PaymentsController extends LoggedInController
         midnight.setMinutes(0)
         midnight.setSeconds(0)
         @req.models.Payment.find()
-          .where("id <> ? AND user_id = ? AND period_from >= ?", [payment.id, payment.user_id, midnight])
+          .where("id <> ? AND user_id = ? AND period_from >= ? AND include = ?", [payment.id, payment.user_id, midnight, true])
           .all (err, paymentsToRewrite) =>
             return done err if err
             rewrite = (p, done) ->
