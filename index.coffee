@@ -92,7 +92,7 @@ module.exports =
 
       statusText =
         if +paidUntil > +midnightThisMorning
-          "<p class='text-success'>Payments up to date</p>"
+          "<p class='text-success'>Payments up to date (next due: #{paidUntil.toISOString().substr(0,10)})</p>"
         else if +paidUntil > midnightAMonthAgo
           "<p class='text-warning'>Payments #{overdueDays} days overdue</p>"
         else
