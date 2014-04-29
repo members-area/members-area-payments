@@ -60,18 +60,19 @@ module.exports =
       if payments?.length
         for payment in payments
           rows.push """
-            <tr>
+            <tr class="#{if payment.include then "" else "text-error"}">
               <td>#{payment.when.toISOString().substr(0, 10)}</td>
               <td>#{payment.type}</td>
               <td>£#{(payment.amount/100).toFixed(2)}</td>
               <td>#{payment.period_from.toISOString().substr(0, 10)}</td>
               <td>#{payment.period_count}</td>
+              <td>#{if payment.include then "✔" else "✘"}</td>
             </tr>
             """
       else
         rows.push """
           <tr>
-            <td colspan="5">
+            <td colspan="6">
               No records to display
             </td>
           </tr>
@@ -107,6 +108,7 @@ module.exports =
             <th>Amount</th>
             <th>From</th>
             <th>Duration (months)</th>
+            <th>Worked?</th>
           </tr>
           #{rows.join("\n")}
         </table>
