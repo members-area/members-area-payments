@@ -16,6 +16,7 @@ module.exports =
 
     RoleController.before @handleRoleSubscription, only: ['edit']
     PersonController.before @addPaidUntilClasses, only: ['index']
+    PersonController.before @addPayment, only: ['view']
 
     @addCSS "#{__dirname}/css/payments.styl"
 
@@ -49,6 +50,36 @@ module.exports =
       """
     $topNode.after $newNode
     return
+
+  addPayment: (done) ->
+    # IMPORTANT: this method runs in the context of a PersonController instance
+    return done() unless @req.method is 'POST' and @req.body?.action is 'add-payment'
+    return done() unless @loggedInUser.can 'admin'
+    return done new Error("Invalid YYYY-MM-DD date '#{@req.body.when}'") unless /^201[4-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/.test @req.body.when
+    return done new Error("Invalid type '#{@req.body.type}'") unless @req.body.type in ['CASH', 'PAYPAL', 'OTHER']
+    periodCount = parseInt(@req.body.period_count, 10)
+    return done new Error("Invalid period count '#{@req.body.period_count}'") unless 1 <= periodCount <= 12
+
+    paidWhen = new Date(Date.parse(@req.body.when))
+    nextPaymentDate = @user.getPaidUntil paidWhen
+
+    payment =
+      user_id: @user.id
+      type: @req.body.type
+      amount: Math.round(parseFloat(@req.body.amount) * 100)
+      status: 'paid'
+      include: true
+      when: paidWhen
+      period_from: nextPaymentDate
+      period_count: periodCount
+
+    nextPaymentDate = new Date(+nextPaymentDate)
+    nextPaymentDate.setMonth(nextPaymentDate.getMonth() + periodCount)
+    @user.paidUntil = nextPaymentDate
+
+    @req.models.Payment.create [payment], (err) =>
+      return done err if err
+      @user.save done
 
   renderPersonPayments: (options, done) ->
     {controller, $} = options
@@ -103,6 +134,57 @@ module.exports =
           "<p class='text-error'>Payments #{Math.floor overdueDays/7} weeks overdue</p>"
 
       $main.append """
+        <h3>Add a Payment</h3>
+        <form method="POST">
+          <table class="table table-bordered" style="width: auto">
+            <tr>
+              <th>Payment type</th>
+              <td>
+                <select name='type'>
+                  <option value='CASH'>Cash</option>
+                  <option value='PAYPAL'>PayPal</option>
+                  <option value='OTHER'>Other</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                Payment date<br>
+                <small>(YYYY-MM-DD)</small>
+              </th>
+              <td>
+                <input name='when' placeholder='YYYY-MM-DD' value='#{new Date().toISOString().substr(0,10)}'>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                Amount<br>
+                <small>£ (GBP)</small>
+              </th>
+              <td>
+                <input name='amount' value='5.00'>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                Duration<br>
+                <small>(months, the period covered by the payment)
+              </th>
+              <td>
+                <select name='period_count'>
+                  <option value='1' selected='selected'>1 month</option>
+                  <option value='2'>2 months</option>
+                  <option value='3'>3 months</option>
+                  <option value='6'>6 months</option>
+                  <option value='12'>12 months</option>
+                </select>
+              </td>
+            </tr>
+          </table>
+          <button class='btn btn-warning' type='submit' name='action' value='add-payment'>
+            Register payment
+          </button>
+        </form>
         <h3>Payments</h3>
         #{statusText}
         <table class="table table-striped">
