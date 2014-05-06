@@ -38,7 +38,7 @@ module.exports =
 
   renderRoleSubscription: (options) ->
     {controller, $} = options
-    $topNode = $('.control-group').eq(0)
+    $topNode = $('.main form').first().find('.control-group').last()
     checked = if !!controller.role.meta.subscriptionRequired then " checked='checked'" else ""
     $newNode = $ """
       <div class="control-group">
@@ -48,7 +48,7 @@ module.exports =
         </div>
       </div>
       """
-    $topNode.after $newNode
+    $topNode.before $newNode
     return
 
   addPayment: (done) ->
