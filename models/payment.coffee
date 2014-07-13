@@ -89,6 +89,13 @@ module.exports = (db, models) ->
   models.User.instanceMethods.getPaidUntil = (suggestedDate) ->
     Payment.getUserPaidUntil(this, suggestedDate)
 
+  models.User.instanceProperties.subscriptionRequired =
+    get: ->
+      for roleUser in @activeRoleUsers ? []
+        return true if roleUser.role?.meta?.subscriptionRequired
+      return false
+    set: -> throw new Error("Cannot set subscriptionRequired.")
+
   models.User.instanceProperties.paidUntil =
     get: -> Payment.getUserPaidUntil(this)
     set: (v) -> Payment.setUserPaidUntil(this, v)

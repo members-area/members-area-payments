@@ -1,5 +1,6 @@
 RoleController = require 'members-area/app/controllers/role'
 PersonController = require 'members-area/app/controllers/person'
+encode = require('members-area/node_modules/entities').encodeXML
 
 module.exports =
   initialize: (done) ->
@@ -13,6 +14,7 @@ module.exports =
       models.Payment.hasOne 'user', models.User, reverse: 'payments', autoFetch: true
     @hook 'render-role-edit', @renderRoleSubscription.bind(this)
     @hook 'render-person-view', @renderPersonPayments.bind(this)
+    @hook 'render-person-index', @renderPersonIndex.bind(this)
 
     RoleController.before @handleRoleSubscription, only: ['edit']
     PersonController.before @addPaidUntilClasses, only: ['index']
@@ -80,6 +82,38 @@ module.exports =
     @req.models.Payment.create [payment], (err) =>
       return done err if err
       @user.save done
+
+  renderPersonIndex: (options, done) ->
+    {controller, $} = options
+    return done() unless controller.loggedInUser.can 'admin'
+    $main = $(".main").eq(0)
+
+    map =
+      good: "<4 days overdue"
+      warning: "<30 days overdue"
+      severeWarning: "<90 days overdue"
+      error: "Massively overdue"
+      none: "No subs required"
+    rows = []
+    for k, v of map
+      rows.push """
+        <tr>
+          <td>#{encode v}</td>
+          <td>#{controller.subscriptionStats[k]}</td>
+        </tr>
+        """
+    $main.append """
+      <table style="width: 30%" class="table">
+        <tr>
+          <th>Subscription status</th>
+          <th>Count</th>
+        </tr>
+        #{rows.join("")}
+      </table>
+      """
+    done()
+    return
+
 
   renderPersonPayments: (options, done) ->
     {controller, $} = options
@@ -218,13 +252,27 @@ module.exports =
     midnightThisMorning.setMinutes(0)
     midnightThisMorning.setSeconds(0)
 
+    @subscriptionStats =
+      none: 0
+      good: 0
+      warning: 0
+      severeWarning: 0
+      error: 0
+
     for user in @users
       overdueDays = Math.floor (midnightThisMorning - user.paidUntil)/(24*60*60*1000)
       if overdueDays <= 3
         user.classNames += " payments-good"
+        if user.subscriptionRequired
+          @subscriptionStats.good++
+        else
+          @subscriptionStats.none++
       else if overdueDays < 30
         user.classNames += " payments-warning"
+        @subscriptionStats.warning++
       else if overdueDays < 90
         user.classNames += " payments-severe-warning"
+        @subscriptionStats.severeWarning++
       else
         user.classNames += " payments-error"
+        @subscriptionStats.error++
