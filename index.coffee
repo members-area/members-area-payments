@@ -11,7 +11,7 @@ module.exports =
     @hook 'navigation_items', @modifyNavigationItems.bind(this)
     @hook 'models:initialize', ({models}) =>
       models.Payment.hasOne 'transaction', models.Transaction, reverse: 'payments', autoFetch: false
-      models.Payment.hasOne 'user', models.User, reverse: 'payments', autoFetch: true
+      models.Payment.hasOne 'user', models.User, reverse: 'payments', autoFetch: false
     @hook 'render-role-edit', @renderRoleSubscription.bind(this)
     @hook 'render-person-view', @renderPersonPayments.bind(this)
     @hook 'render-person-index', @renderPersonIndex.bind(this)

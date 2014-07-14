@@ -9,7 +9,7 @@ class PaymentsController extends LoggedInController
   @before 'updatePayment', only: ['view']
 
   index: (done) ->
-    @req.models.Payment.find()
+    @req.models.Payment.find({}, {autoFetch: true})
     .order("-id")
     .all (err, @payments) =>
       done(err)
@@ -17,7 +17,7 @@ class PaymentsController extends LoggedInController
   view: ->
 
   getPayment: (done) ->
-    @req.models.Payment.get @req.params.id, (err, @payment) =>
+    @req.models.Payment.get @req.params.id, autoFetch: true, (err, @payment) =>
       done(err)
 
   updatePayment: (done) ->
