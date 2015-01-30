@@ -93,6 +93,7 @@ module.exports =
       warning: "<30 days overdue"
       severeWarning: "<90 days overdue"
       error: "Massively overdue"
+      supporter: "Recent supporter"
       none: "No subs required"
     rows = []
     for k, v of map
@@ -252,8 +253,12 @@ module.exports =
     midnightThisMorning.setMinutes(0)
     midnightThisMorning.setSeconds(0)
 
+    twentyDaysAgo = new Date()
+    twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20)
+
     @subscriptionStats =
       none: 0
+      supporter: 0
       good: 0
       warning: 0
       severeWarning: 0
@@ -265,6 +270,8 @@ module.exports =
         user.classNames += " payments-good"
         if user.subscriptionRequired
           @subscriptionStats.good++
+        else if (midnightThisMorning - user.getPaidUntil(twentyDaysAgo)) / (24*60*60*1000) <= 14
+          @subscriptionStats.supporter++
         else
           @subscriptionStats.none++
       else if overdueDays < 30
