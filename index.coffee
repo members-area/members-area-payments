@@ -210,7 +210,14 @@ module.exports =
                   <option value='1' selected='selected'>1 month</option>
                   <option value='2'>2 months</option>
                   <option value='3'>3 months</option>
+                  <option value='4'>4 months</option>
+                  <option value='5'>5 months</option>
                   <option value='6'>6 months</option>
+                  <option value='7'>7 months</option>
+                  <option value='8'>8 months</option>
+                  <option value='9'>9 months</option>
+                  <option value='10'>10 months</option>
+                  <option value='11'>11 months</option>
                   <option value='12'>12 months</option>
                 </select>
               </td>
