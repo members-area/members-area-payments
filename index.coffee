@@ -3,6 +3,11 @@ PersonController = require 'members-area/app/controllers/person'
 encode = require('members-area/node_modules/entities').encodeXML
 
 module.exports =
+  customPaymentMethods:
+    CASH: "Cash"
+    PAYPAL: "PayPal"
+    OTHER: "Other"
+
   initialize: (done) ->
     @app.addRoute 'all', '/admin/payments', 'members-area-payments#payments#index'
     @app.addRoute 'all', '/admin/payments/:id', 'members-area-payments#payments#view'
@@ -18,7 +23,7 @@ module.exports =
 
     RoleController.before @handleRoleSubscription, only: ['edit']
     PersonController.before @addPaidUntilClasses, only: ['index']
-    PersonController.before @addPayment, only: ['view']
+    PersonController.before @addPayment(@customPaymentMethods), only: ['view']
 
     @addCSS "#{__dirname}/css/payments.styl"
 
@@ -53,12 +58,12 @@ module.exports =
     $topNode.before $newNode
     return
 
-  addPayment: (done) ->
+  addPayment: (customPaymentMethods) -> (done) ->
     # IMPORTANT: this method runs in the context of a PersonController instance
     return done() unless @req.method is 'POST' and @req.body?.action is 'add-payment'
     return done() unless @loggedInUser.can 'admin'
     return done new Error("Invalid YYYY-MM-DD date '#{@req.body.when}'") unless /^201[4-9]-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/.test @req.body.when
-    return done new Error("Invalid type '#{@req.body.type}'") unless @req.body.type in ['CASH', 'PAYPAL', 'OTHER']
+    return done new Error("Invalid type '#{@req.body.type}'") unless customPaymentMethods[@req.body.type]
     periodCount = parseInt(@req.body.period_count, 10)
     return done new Error("Invalid period count '#{@req.body.period_count}'") unless 1 <= periodCount <= 12
 
@@ -176,9 +181,11 @@ module.exports =
               <th>Payment type</th>
               <td>
                 <select name='type'>
-                  <option value='CASH'>Cash</option>
-                  <option value='PAYPAL'>PayPal</option>
-                  <option value='OTHER'>Other</option>
+                  #{
+                    (for k, v of @customPaymentMethods
+                      "<option value='#{k}'>#{v}</option>"
+                    ).join("\n")
+                  }
                 </select>
               </td>
             </tr>
