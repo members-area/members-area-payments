@@ -7,6 +7,7 @@ class PaymentsController extends LoggedInController
   @before 'saveSettings', only: ['index']
   @before 'getPayment', only: ['view']
   @before 'updatePayment', only: ['view']
+  @before 'cancelPayment', only: ['view']
 
   index: (done) ->
     @req.models.Payment.find({}, {autoFetch: true})
@@ -18,15 +19,10 @@ class PaymentsController extends LoggedInController
 
   getPayment: (done) ->
     @req.models.Payment.get @req.params.id, autoFetch: true, (err, @payment) =>
+      @cancelable = @plugin.customPaymentMethods[@payment.type]?
       done(err)
 
-  updatePayment: (done) ->
-    return done() unless @req.method is 'POST' and @req.body.period_count
-    periodCount = parseInt(@req.body.period_count, 10)
-    diff = periodCount - @payment.period_count
-    return done() if diff is 0
-    payment = @payment
-    payment.period_count = periodCount
+  _updatePayment: (payment, diff, done) ->
     payment.save (err) =>
       return done err if err
       paidUntil = new Date +payment.user.paidUntil
@@ -50,6 +46,25 @@ class PaymentsController extends LoggedInController
             async.eachSeries paymentsToRewrite, rewrite, ->
               console.log "Changed #{payment.user.fullname}'s paid until by #{diff} month(s) at admin's request"
               done null, payment
+
+  cancelPayment: (done) ->
+    return done() unless @req.method is 'POST'
+    if @req.body.cancel is 'cancel'
+      payment = @payment
+      return done() unless payment.include
+      payment.include = false
+      @_updatePayment(payment, -payment.period_count, done)
+    else
+      return done()
+
+  updatePayment: (done) ->
+    return done() unless @req.method is 'POST' and @req.body.period_count
+    periodCount = parseInt(@req.body.period_count, 10)
+    diff = periodCount - @payment.period_count
+    return done() if diff is 0
+    payment = @payment
+    payment.period_count = periodCount
+    @_updatePayment(payment, diff, done)
 
   requireAdmin: (done) ->
     unless @req.user and @req.user.can('admin')

@@ -41,3 +41,7 @@ block content
         th Worked?
         td= (payment.include ? "✔" : "✘")
     button(type="submit") Update
+
+  if cancelable && payment.include
+    form.form(method="POST")
+      button.btn.btn-danger(type="submit", name="cancel", value="cancel", onclick="return confirm('Are you sure you want to cancel this payment?')") Cancel payment
