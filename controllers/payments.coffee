@@ -10,9 +10,18 @@ class PaymentsController extends LoggedInController
   @before 'cancelPayment', only: ['view']
 
   index: (done) ->
+    limit = 25
+    page = parseInt(@req.query.page, 10) || 0
+    page = 0 if page < 0
+    @page = page
+
     @req.models.Payment.find({}, {autoFetch: true})
     .order("-id")
-    .all (err, @payments) =>
+    .offset(page * limit)
+    .limit(limit)
+    .run (err, @payments) =>
+      @hasNext = @payments.length is limit
+      @hasPrev = @page > 0
       done(err)
 
   view: ->

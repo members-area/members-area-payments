@@ -6,11 +6,24 @@ mixin formatInput(name, label, placeholder)
     .controls
       input(id=name, name=name, value=data[name], placeholder=placeholder)
 
+mixin nav()
+  form(method='GET', action='')
+    if hasPrev
+      button.btn.btn-success(type='submit', name='page', value=(page - 1)) <-- Prev
+    else
+      button.btn.btn-inverse(readonly='readonly', disabled='disabled') <-- Prev
+    if hasNext
+      button.btn.btn-success(type='submit', name='page', value=(page + 1)) Next -->
+    else
+      button.btn.btn-inverse(readonly='readonly', disabled='disabled') Next -->
+
 block title
   | Payments
 
 block content
   h2 Payments
+
+  +nav()
 
   table.table.table-striped
     tr
@@ -35,6 +48,8 @@ block content
     else
       tr
         td(colspan=6) No payments yet.
+
+  +nav()
 
   h3 Settings
   form.form-horizontal(method="POST")
